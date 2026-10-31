@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal - Result Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #e8e8e8;
+    color: #333;
+    min-height: 100vh;
+  }
+
+  /* Top header bar */
+  .top-bar {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .top-bar .logo { font-weight: 700; font-size: 1.2rem; }
+  .top-bar .user-info { font-size: 0.9rem; }
+  .top-bar button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .top-bar button:hover { background: #c0392b; }
+
+  /* Navigation */
+  .nav {
+    background: #34495e;
+    display: flex;
+    gap: 0;
+    padding: 0 10px;
+  }
+  .nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav a:hover, .nav a.active {
+    background: #1abc9c;
+    color: white;
+  }
+
+  /* Main container */
+  .container {
+    max-width: 980px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  /* Profile header */
+  .profile-header {
+    display: flex;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+    padding: 0;
+  }
+  .avatar {
+    width: 110px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+  }
+  .avatar svg {
+    width: 70px;
+    height: 70px;
+    fill: #b0b0b0;
+  }
+  .info-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .info-row {
+    display: contents;
+  }
+  .info-label, .info-value {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.92rem;
+  }
+  .info-label {
+    background: #f0f0f0;
+    font-weight: 600;
+    color: #555;
+    width: 160px;
+  }
+  .info-value {
+    background: #fff;
+  }
+  .info-grid .info-row:nth-child(odd) .info-label,
+  .info-grid .info-row:nth-child(odd) .info-value {
+    background: #fafafa;
+  }
+
+  /* Section title */
+  .section-title {
+    background: #ecf0f1;
+    padding: 12px 20px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    border-bottom: 1px solid #ddd;
+    color: #2c3e50;
+  }
+
+  /* Print link */
+  .print-link {
+    text-align: center;
+    padding: 12px;
+    background: #fff;
+  }
+  .print-link a {
+    color: #2980b9;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .print-link a:hover { text-decoration: underline; }
+
+  /* Table */
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .result-table th {
+    background: #f0f0f0;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-weight: 600;
+    color: #444;
+  }
+  .result-table td {
+    padding: 9px 12px;
+    border: 1px solid #ddd;
+  }
+  .result-table tr:nth-child(even) { background: #f9f9f9; }
+  .result-table tr:hover { background: #eef7ff; }
+  .result-table .footer-row td {
+    background: #f0f0f0;
+    font-weight: 600;
+  }
+  .gp-good { color: #27ae60; font-weight: 600; }
+  .status-good {
+    color: #27ae60;
+    font-weight: 700;
+  }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Courses page */
+  .courses-list {
+    padding: 20px;
+  }
+  .course-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    transition: box-shadow 0.2s;
+  }
+  .course-card:hover {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    background: #fff;
+  }
+  .course-card .left h3 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: #2c3e50;
+  }
+  .course-card .left p {
+    font-size: 0.85rem;
+    color: #777;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge.passed { background: #d5f5e3; color: #1e8449; }
+  .badge.credit { background: #d6eaf8; color: #1a5276; }
+
+  /* Dashboard */
+  .dashboard {
+    padding: 25px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 18px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .stat-card.green { background: linear-gradient(135deg, #27ae60, #1e8449); }
+  .stat-card.orange { background: linear-gradient(135deg, #e67e22, #d35400); }
+  .stat-card.purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+  .stat-card h2 { font-size: 1.8rem; margin-bottom: 4px; }
+  .stat-card p { font-size: 0.85rem; opacity: 0.9; }
+
+  .welcome {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #1abc9c;
+    margin-bottom: 20px;
+  }
+  .welcome h2 { color: #2c3e50; margin-bottom: 6px; }
+  .welcome p { color: #555; font-size: 0.95rem; }
+
+  /* Transcript page */
+  .transcript { padding: 20px; }
+  .sem-block {
+    margin-bottom: 25px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .sem-header {
+    background: #34495e;
+    color: white;
+    padding: 10px 15px;
+    font-weight: 600;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 0.8rem;
+    color: #888;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .info-label { width: auto; }
+    .nav { flex-wrap: wrap; }
+    .profile-header { flex-direction: column; }
+    .avatar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">CUIT Student Portal</div>
+  <div class="user-info">
+    Welcome, <strong>Ali Nawaz</strong> &nbsp;|&nbsp;
+    <button onclick="alert('Logged out successfully!')">Logout</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <a href="#" class="nav-link active" data-page="dashboard">Dashboard</a>
+  <a href="#" class="nav-link" data-page="results">Results</a>
+  <a href="#" class="nav-link" data-page="courses">Courses</a>
+  <a href="#" class="nav-link" data-page="transcript">Transcript</a>
+  <a href="#" class="nav-link" data-page="profile">Profile</a>
+</nav>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboard" class="page active">
+  <div class="container">
+    <div class="section-title">Student Dashboard</div>
+    <div class="dashboard">
+      <div class="welcome">
+        <h2>Welcome back, Ali Nawaz!</h2>
+        <p>Roll No: CUIT/SP26-BCS-103/ATD &nbsp;•&nbsp; Program: BCS &nbsp;•&nbsp; Semester: Spring 2026</p>
+      </div>
+      <div class="stats">
+        <div class="stat-card green">
+          <h2>3.50</h2>
+          <p>Current CGPA</p>
+        </div>
+        <div class="stat-card">
+          <h2>6</h2>
+          <p>Registered Courses</p>
+        </div>
+        <div class="stat-card orange">
+          <h2>Good</h2>
+          <p>Scholastic Status</p>
+        </div>
+        <div class="stat-card purple">
+          <h2>12</h2>
+          <p>Total Courses</p>
+        </div>
+      </div>
+      <p style="color:#555;font-size:0.95rem;">Use the navigation above to view your detailed results, registered courses, or full transcript.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RESULTS ================= -->
+<div id="results" class="page">
+  <div class="container">
+    <!-- Profile Header (same style as original) -->
+    <div class="profile-header">
+      <div class="avatar">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="20" r="12" fill="#b0b0b0"/>
+          <path d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="#b0b0b0"/>
+        </svg>
+      </div>
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-label">Name :</div>
+          <div class="info-value">Ali Nawaz</div>
+          <div class="info-label">Roll No :</div>
+          <div class="info-value">CUIT/SP26-BCS-103/ATD</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Program :</div>
+          <div class="info-value">BCS</div>
+          <div class="info-label">Registered Courses :</div>
+          <div class="info-value">6</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Total Registered Courses :</div>
+          <div class="info-value">12</div>
+          <div class="info-label">Selected Course :</div>
+          <div class="info-value"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Student Result Card</div>
+    <div class="print-link">
+      <a href="#" onclick="window.print(); return false;">Click Here For Print Version</a>
+    </div>
+
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th colspan="6" style="text-align:left; background:#fff; font-weight:600;">
+            Result Semester: Spring 2026
+          </th>
+        </tr>
+        <tr>
+          <th>Course No</th>
+          <th>Course Title</th>
+          <th>Credit</th>
+          <th>Marks</th>
+          <th>LG</th>
+          <th>GP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CSC101</td>
+          <td>Applications of Information and Communication Technologies</td>
+          <td>3</td>
+          <td>85</td>
+          <td>A</td>
+          <td class="gp-good">4.00</td>
+        </tr>
+        <tr>
+          <td>CSC103</td>
+          <td>Programming Fundamentals</td>
+          <td>4</td>
+          <td>82</td>
+          <td>A-</td>
+          <td class="gp-good">3.66</td>
+        </tr>
+        <tr>
+          <td>HUM104</td>
+          <td>Functional English</td>
+          <td>3</td>
+          <td>78</td>
+          <td>B+</td>
+          <td class="gp-good">3.33</td>
+        </tr>
+        <tr>
+          <td>HUM112</td>
+          <td>Islamic Studies</td>
+          <td>2</td>
+          <td>80</td>
+          <td>A-</td>
+          <td class="gp-good">3.66</td>
+        </tr>
+        <tr>
+          <td>HUM122</td>
+          <td>Fundamentals of Psychology</td>
+          <td>2</td>
+          <td>76</td>
+          <td>B+</td>
+          <td class="gp-good">3.33</td>
+        </tr>
+        <tr>
+          <td>HUM141</td>
+          <td>Seerah of Holy Prophet S.A.W.</td>
+          <td>0</td>
+          <td>Non Credit Course</td>
+          <td>Non Credit Course</td>
+          <td>Non Credit Course</td>
+        </tr>
+        <tr>
+          <td>HUM208</td>
+          <td>Civics and Community Engagement</td>
+          <td>2</td>
+          <td>79</td>
+          <td>B+</td>
+          <td class="gp-good">3.33</td>
+        </tr>
+        <tr class="footer-row">
+          <td colspan="3">CGPA: <span class="gp-good">3.50</span></td>
+          <td colspan="3">Scholastic Status: <span class="status-good">Good</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= COURSES ================= -->
+<div id="courses" class="page">
+  <div class="container">
+    <div class="section-title">Registered Courses – Spring 2026</div>
+    <div class="courses-list">
+      <div class="course-card">
+        <div class="left">
+          <h3>CSC101 – Applications of Information and Communication Technologies</h3>
+          <p>Credit Hours: 3 &nbsp;|&nbsp; Instructor: Dr. Ahmed Khan</p>
+        </div>
+        <span class="badge passed">Passed • A (4.00)</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>CSC103 – Programming Fundamentals</h3>
+          <p>Credit Hours: 4 &nbsp;|&nbsp; Instructor: Ms. Sara Malik</p>
+        </div>
+        <span class="badge passed">Passed • A- (3.66)</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>HUM104 – Functional English</h3>
+          <p>Credit Hours: 3 &nbsp;|&nbsp; Instructor: Mr. Bilal Hussain</p>
+        </div>
+        <span class="badge passed">Passed • B+ (3.33)</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>HUM112 – Islamic Studies</h3>
+          <p>Credit Hours: 2 &nbsp;|&nbsp; Instructor: Dr. Fatima Noor</p>
+        </div>
+        <span class="badge passed">Passed • A- (3.66)</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>HUM122 – Fundamentals of Psychology</h3>
+          <p>Credit Hours: 2 &nbsp;|&nbsp; Instructor: Ms. Ayesha Raza</p>
+        </div>
+        <span class="badge passed">Passed • B+ (3.33)</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>HUM141 – Seerah of Holy Prophet S.A.W.</h3>
+          <p>Credit Hours: 0 (Non-Credit) &nbsp;|&nbsp; Instructor: Maulana Usman Ali</p>
+        </div>
+        <span class="badge credit">Non-Credit</span>
+      </div>
+      <div class="course-card">
+        <div class="left">
+          <h3>HUM208 – Civics and Community Engagement</h3>
+          <p>Credit Hours: 2 &nbsp;|&nbsp; Instructor: Mr. Imran Shah</p>
+        </div>
+        <span class="badge passed">Passed • B+ (3.33)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TRANSCRIPT ================= -->
+<div id="transcript" class="page">
+  <div class="container">
+    <div class="section-title">Academic Transcript</div>
+    <div class="transcript">
+      <div class="sem-block">
+        <div class="sem-header">Spring 2026</div>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Course</th>
+              <th>Title</th>
+              <th>Cr</th>
+              <th>Grade</th>
+              <th>GP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>CSC101</td><td>Applications of ICT</td><td>3</td><td>A</td><td>4.00</td></tr>
+            <tr><td>CSC103</td><td>Programming Fundamentals</td><td>4</td><td>A-</td><td>3.66</td></tr>
+            <tr><td>HUM104</td><td>Functional English</td><td>3</td><td>B+</td><td>3.33</td></tr>
+            <tr><td>HUM112</td><td>Islamic Studies</td><td>2</td><td>A-</td><td>3.66</td></tr>
+            <tr><td>HUM122</td><td>Fundamentals of Psychology</td><td>2</td><td>B+</td><td>3.33</td></tr>
+            <tr><td>HUM208</td><td>Civics and Community Engagement</td><td>2</td><td>B+</td><td>3.33</td></tr>
+            <tr class="footer-row">
+              <td colspan="3">Semester GPA: 3.55</td>
+              <td colspan="2">CGPA: 3.50</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:#666; font-size:0.9rem; margin-top:10px;">
+        Overall CGPA: <strong style="color:#27ae60">3.50</strong> &nbsp;|&nbsp; Scholastic Status: <strong style="color:#27ae60">Good</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PROFILE ================= -->
+<div id="profile" class="page">
+  <div class="container">
+    <div class="section-title">Student Profile</div>
+    <div class="profile-header" style="border-bottom:none;">
+      <div class="avatar">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="20" r="12" fill="#b0b0b0"/>
+          <path d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="#b0b0b0"/>
+        </svg>
+      </div>
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-label">Full Name</div>
+          <div class="info-value">Ali Nawaz</div>
+          <div class="info-label">Roll Number</div>
+          <div class="info-value">CUIT/SP26-BCS-103/ATD</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Program</div>
+          <div class="info-value">Bachelor of Computer Science (BCS)</div>
+          <div class="info-label">Campus</div>
+          <div class="info-value">Abbottabad</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Current CGPA</div>
+          <div class="info-value" style="color:#27ae60;font-weight:700;">3.50</div>
+          <div class="info-label">Scholastic Status</div>
+          <div class="info-value" style="color:#27ae60;font-weight:700;">Good</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Email</div>
+          <div class="info-value">ali.nawaz@students.cuit.edu.pk</div>
+          <div class="info-label">Batch</div>
+          <div class="info-value">Spring 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  © 2026 CUIT Student Portal • For demonstration purposes only
+</div>
+
+<script>
+  // Simple SPA navigation
+  const links = document.querySelectorAll('.nav-link');
+  const pages = document.querySelectorAll('.page');
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = link.getAttribute('data-page');
+
+      // Update active nav
+      links.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+
+      // Show correct page
+      pages.forEach(p => p.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
